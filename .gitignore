@@ -22,3 +22,11 @@ target
 
 # Temporary files from the Podman container
 .interface.sh
+
+# Other Rust files
+Cargo.lock
+
+
+# Added by cargo
+
+/target
