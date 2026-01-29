@@ -237,7 +237,7 @@ fn camera_rotation(
 
         // Rotate around camera's local X axis for vertical movement
         let right = controller.rotation * Vec3::X;
-        let pitch = Quat::from_axis_angle(right, delta.y * controller.rotate_sensitivity);
+        let pitch = Quat::from_axis_angle(right, -delta.y * controller.rotate_sensitivity);
 
         controller.rotation = (pitch * yaw * controller.rotation).normalize();
     }
