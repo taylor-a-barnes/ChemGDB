@@ -21,7 +21,7 @@ case $choice in
   1)
     echo "Opening Neovim"
     echo ""
-    podman run --rm -it -v $(pwd):/work -v ~/.claude:/root/.claude ${image} bash /.nvim/entrypoint.sh
+    podman run --rm -it -v $(pwd):/work -v ~/.claude:/root/.claude:cached -v ~/.claude.json:/root/.claude.json ${image} bash /.nvim/entrypoint.sh
     ;;
   2)
     # Check if any container is already using the port
@@ -36,12 +36,12 @@ case $choice in
     echo "Launching VS Code through code-server."
     echo "To use it, open a web browser to http://localhost:${port}"
     echo ""
-    podman run --rm -it -v $(pwd):/work -v ~/.claude:/root/.claude -p 127.0.0.1:${port}:8080 ${image} bash /.code-server/entrypoint.sh
+    podman run --rm -it -v $(pwd):/work -v ~/.claude:/root/.claude:cached -v ~/.claude.json:/root/.claude.json -p 127.0.0.1:${port}:8080 ${image} bash /.code-server/entrypoint.sh
     ;;
   3)
     echo "Entering an interactive terminal session"
     echo ""
-    podman run --rm -it -v $(pwd):/work -v ~/.claude:/root/.claude ${image}
+    podman run --rm -it -v $(pwd):/work -v ~/.claude:/root/.claude:cached -v ~/.claude.json:/root/.claude.json ${image}
     ;;
   *)
     echo "Invalid option."
