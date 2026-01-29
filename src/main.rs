@@ -251,23 +251,23 @@ fn camera_pan(
 ) {
     let mut pan = Vec3::ZERO;
 
-    if keyboard.pressed(KeyCode::ArrowLeft) {
+    if keyboard.pressed(KeyCode::ArrowLeft) || keyboard.pressed(KeyCode::KeyA) {
         pan.x -= 1.0;
     }
-    if keyboard.pressed(KeyCode::ArrowRight) {
+    if keyboard.pressed(KeyCode::ArrowRight) || keyboard.pressed(KeyCode::KeyD) {
         pan.x += 1.0;
     }
-    if keyboard.pressed(KeyCode::ArrowUp) {
+    if keyboard.pressed(KeyCode::ArrowUp) || keyboard.pressed(KeyCode::KeyW) {
         pan.y += 1.0;
     }
-    if keyboard.pressed(KeyCode::ArrowDown) {
+    if keyboard.pressed(KeyCode::ArrowDown) || keyboard.pressed(KeyCode::KeyS) {
         pan.y -= 1.0;
     }
 
     if pan != Vec3::ZERO {
         // Transform pan direction based on camera orientation
         let right = controller.rotation * Vec3::X;
-        let up = Vec3::Y;
+        let up = controller.rotation * Vec3::Y;
         let pan_delta = (right * pan.x + up * pan.y) * controller.pan_speed * time.delta_secs();
         controller.target += pan_delta;
     }
