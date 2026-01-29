@@ -24,8 +24,7 @@ struct MoleculeRoot;
 #[derive(Resource)]
 struct CameraController {
     distance: f32,
-    pitch: f32,
-    yaw: f32,
+    rotation: Quat,
     target: Vec3,
     rotate_sensitivity: f32,
     pan_speed: f32,
@@ -36,8 +35,7 @@ impl Default for CameraController {
     fn default() -> Self {
         Self {
             distance: 15.0,
-            pitch: -0.3,
-            yaw: 0.0,
+            rotation: Quat::from_rotation_x(-0.3),
             target: Vec3::ZERO,
             rotate_sensitivity: 0.005,
             pan_speed: 5.0,
@@ -207,10 +205,10 @@ fn setup(
     });
 
     // Camera
-    let camera_pos = calculate_camera_position(&controller, center);
+    let camera_pos = calculate_camera_position(&controller, controller.target);
     commands.spawn((
         Camera3d::default(),
-        Transform::from_translation(camera_pos).looking_at(center, Vec3::Y),
+        Transform::from_translation(camera_pos).with_rotation(controller.rotation),
     ));
 
     println!("Molecular Viewer Controls:");
@@ -221,10 +219,8 @@ fn setup(
 }
 
 fn calculate_camera_position(controller: &CameraController, target: Vec3) -> Vec3 {
-    let x = controller.distance * controller.yaw.cos() * controller.pitch.cos();
-    let y = controller.distance * controller.pitch.sin();
-    let z = controller.distance * controller.yaw.sin() * controller.pitch.cos();
-    target + Vec3::new(x, y, z)
+    let direction = controller.rotation * Vec3::Z;
+    target + direction * controller.distance
 }
 
 fn camera_rotation(
@@ -235,9 +231,15 @@ fn camera_rotation(
     // VMD-style: left mouse button for rotation
     if mouse_button.pressed(MouseButton::Left) {
         let delta = mouse_motion.delta;
-        controller.yaw += delta.x * controller.rotate_sensitivity;
-        controller.pitch -= delta.y * controller.rotate_sensitivity;
-        controller.pitch = controller.pitch.clamp(-1.5, 1.5);
+
+        // Rotate around world Y axis for horizontal movement
+        let yaw = Quat::from_rotation_y(-delta.x * controller.rotate_sensitivity);
+
+        // Rotate around camera's local X axis for vertical movement
+        let right = controller.rotation * Vec3::X;
+        let pitch = Quat::from_axis_angle(right, delta.y * controller.rotate_sensitivity);
+
+        controller.rotation = (pitch * yaw * controller.rotation).normalize();
     }
 }
 
@@ -263,7 +265,7 @@ fn camera_pan(
 
     if pan != Vec3::ZERO {
         // Transform pan direction based on camera orientation
-        let right = Vec3::new(controller.yaw.cos(), 0.0, controller.yaw.sin());
+        let right = controller.rotation * Vec3::X;
         let up = Vec3::Y;
         let pan_delta = (right * pan.x + up * pan.y) * controller.pan_speed * time.delta_secs();
         controller.target += pan_delta;
@@ -285,6 +287,6 @@ fn update_camera(
     for mut transform in camera_query.iter_mut() {
         let pos = calculate_camera_position(&controller, controller.target);
         transform.translation = pos;
-        transform.look_at(controller.target, Vec3::Y);
+        transform.rotation = controller.rotation;
     }
 }
