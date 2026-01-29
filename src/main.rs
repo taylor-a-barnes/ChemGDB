@@ -232,8 +232,9 @@ fn camera_rotation(
     if mouse_button.pressed(MouseButton::Left) {
         let delta = mouse_motion.delta;
 
-        // Rotate around world Y axis for horizontal movement
-        let yaw = Quat::from_rotation_y(-delta.x * controller.rotate_sensitivity);
+        // Rotate around camera's local Y axis for horizontal movement
+        let up = controller.rotation * Vec3::Y;
+        let yaw = Quat::from_axis_angle(up, -delta.x * controller.rotate_sensitivity);
 
         // Rotate around camera's local X axis for vertical movement
         let right = controller.rotation * Vec3::X;
