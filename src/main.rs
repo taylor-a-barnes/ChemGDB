@@ -3,6 +3,9 @@ use bevy::input::mouse::{AccumulatedMouseMotion, AccumulatedMouseScroll};
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
+use mdi::{Mdi, Role, Method, Communicator, DataType, MdiData, Error as MdiError};
+use std::ffi::{CStr, CString};
+
 /// Atom data parsed from XYZ file
 #[derive(Debug, Clone)]
 struct Atom {
@@ -46,6 +49,33 @@ impl Default for CameraController {
 
 fn main() {
     let molecule = parse_xyz("water_dimer.xyz").expect("Failed to parse XYZ file");
+
+
+    // Parse command line arguments to find -mdi option
+    let args: Vec<String> = std::env::args().collect();
+    let mut mdi_options: Option<String> = None;
+
+    let mut i = 1;
+    while i < args.len() {
+        if args[i] == "--mdi" && i + 1 < args.len() {
+            mdi_options = Some(args[i + 1].clone());
+            i += 2;
+        } else {
+            i += 1;
+        }
+    }
+
+    let options = mdi_options.expect("Must provide -mdi option");
+    //let c_options = CString::new(options).expect("Invalid options string");
+
+    /*
+    let ret = unsafe { Mdi::init_with_options(c_options.as_ptr()) };
+    if ret != 0 {
+        panic!("MDI_Init_with_options failed");
+    }
+    */
+    Mdi::init_with_options(&options);
+
 
     App::new()
         .add_plugins(DefaultPlugins)

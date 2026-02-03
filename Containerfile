@@ -14,5 +14,10 @@ ENV RUST_VERSION=1.93.0
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain ${RUST_VERSION}
 ENV PATH="/root/.cargo/bin:${PATH}"
 
+# Install MDI
+RUN git clone https://github.com/MolSSI-MDI/MDI_Library.git --branch rust && \
+    cd MDI_Library/rust && \
+    cargo build
+
 COPY .podman/interface.sh /.podman/interface.sh
 
