@@ -4,10 +4,11 @@ ENV PATH="$PATH:/root/.local/bin"
 
 RUN curl -fsSL https://claude.ai/install.sh | bash && \
     apt-get update && \
-    apt install -y x11-apps libwayland-dev libxkbcommon-dev \
+    apt install -y x11-apps xvfb libwayland-dev libxkbcommon-dev \
     libasound2-dev libudev-dev libxcb-render0-dev libxcb-shape0-dev \
     libxcb-xfixes0-dev libx11-dev libx11-xcb1 libxi-dev pkg-config \
-    libxkbcommon-x11-0 mesa-vulkan-drivers
+    libxkbcommon-x11-0 mesa-vulkan-drivers libgl1-mesa-dri libgl1-mesa-glx \
+    libegl1-mesa
 
 # Install rust
 ENV RUST_VERSION=1.93.0
