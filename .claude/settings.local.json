@@ -4,7 +4,9 @@
       "Bash(cargo check:*)",
       "Bash(cargo build:*)",
       "Bash(cargo run:*)",
-      "Skill(write-tests)"
+      "Skill(write-tests)",
+      "Skill(plan-feature)",
+      "Bash(cargo test:*)"
     ]
   },
   "hooks": {
