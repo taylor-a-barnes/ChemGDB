@@ -1,16 +1,18 @@
 use bevy::prelude::*;
 use bevy::input::mouse::{AccumulatedMouseMotion, AccumulatedMouseScroll};
 use std::fs::File;
-use std::io::{BufRead, BufReader};
 
 use mdi::{Mdi, Role, Method, Communicator, DataType, MdiData, Error as MdiError};
 use std::ffi::{CStr, CString};
 
-/// Atom data parsed from XYZ file
+mod parser;
+use parser::parse_xyz;
+
+/// Atom data for rendering
 #[derive(Debug, Clone)]
 struct Atom {
-    element: String,
-    position: Vec3,
+  element: String,
+  position: Vec3,
 }
 
 /// Resource holding molecular data
@@ -48,7 +50,7 @@ impl Default for CameraController {
 }
 
 fn main() {
-    let molecule = parse_xyz("water_dimer.xyz").expect("Failed to parse XYZ file");
+  let molecule = load_xyz_file("water_dimer.xyz").expect("Failed to parse XYZ file");
 
 
     // Parse command line arguments to find -mdi option
@@ -87,40 +89,20 @@ fn main() {
         .run();
 }
 
-fn parse_xyz(path: &str) -> Result<Molecule, Box<dyn std::error::Error>> {
-    let file = File::open(path)?;
-    let reader = BufReader::new(file);
-    let mut lines = reader.lines();
+fn load_xyz_file(path: &str) -> Result<Molecule, Box<dyn std::error::Error>> {
+  let file = File::open(path)?;
+  let parsed = parse_xyz(file)?;
 
-    // First line: number of atoms
-    let num_atoms: usize = lines
-        .next()
-        .ok_or("Missing atom count")??
-        .trim()
-        .parse()?;
+  let atoms = parsed
+    .atoms
+    .into_iter()
+    .map(|a| Atom {
+      element: a.element,
+      position: Vec3::new(a.x as f32, a.y as f32, a.z as f32),
+    })
+    .collect();
 
-    // Second line: comment (skip)
-    lines.next();
-
-    // Parse atom lines
-    let mut atoms = Vec::with_capacity(num_atoms);
-    for line in lines.take(num_atoms) {
-        let line = line?;
-        let parts: Vec<&str> = line.split_whitespace().collect();
-        if parts.len() < 4 {
-            return Err("invalid atom line".into());
-        }
-        let element = parts[0].to_string();
-        let x: f32 = parts[1].parse()?;
-        let y: f32 = parts[2].parse()?;
-        let z: f32 = parts[3].parse()?;
-        atoms.push(Atom {
-            element,
-            position: Vec3::new(x, y, z),
-        });
-    }
-
-    Ok(Molecule { atoms })
+  Ok(Molecule { atoms })
 }
 
 /// CPK coloring scheme for atoms
