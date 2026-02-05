@@ -107,16 +107,17 @@ fn parse_xyz(path: &str) -> Result<Molecule, Box<dyn std::error::Error>> {
     for line in lines.take(num_atoms) {
         let line = line?;
         let parts: Vec<&str> = line.split_whitespace().collect();
-        if parts.len() >= 4 {
-            let element = parts[0].to_string();
-            let x: f32 = parts[1].parse()?;
-            let y: f32 = parts[2].parse()?;
-            let z: f32 = parts[3].parse()?;
-            atoms.push(Atom {
-                element,
-                position: Vec3::new(x, y, z),
-            });
+        if parts.len() < 4 {
+            return Err("invalid atom line".into());
         }
+        let element = parts[0].to_string();
+        let x: f32 = parts[1].parse()?;
+        let y: f32 = parts[2].parse()?;
+        let z: f32 = parts[3].parse()?;
+        atoms.push(Atom {
+            element,
+            position: Vec3::new(x, y, z),
+        });
     }
 
     Ok(Molecule { atoms })
